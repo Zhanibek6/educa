@@ -60,7 +60,13 @@ INSTALLED_APPS = [
     "django_quill",  # editor like tinymce
     "debug_toolbar",
     "redisboard",
+    # Api stuff
     "rest_framework",
+    "rest_framework.authtoken",
+    "corsheaders",
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
+
     "tinymce",
     "crispy_forms",
     "crispy_bootstrap5",
@@ -84,6 +90,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # api
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "educa.urls"
@@ -193,8 +201,21 @@ INTERNAL_IPS = [
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
-    ]
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+    ] 
 }
+
+# CORS
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',
+]
+
+ALLOWED_HOSTS = [
+    '192.168.100.2',
+    'localhost'
+]
 
 # TinyMCE
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
@@ -290,7 +311,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # Google smpt
-# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default="-")
 EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD", default="-")

@@ -34,6 +34,11 @@ urlpatterns = [
     path("tinymce", include("tinymce.urls")),
     path("chat/", include("chat.urls", namespace="chat")),
     path("quizes/", include("quizes.urls", namespace="quizes")),
+
+    # api
+    #path('api-auth/', include('accounts.api.urls')),
+    path('api-auth/', include('dj_rest_auth.urls')),
+    path('api-auth/registration/', include('dj_rest_auth.registration.urls'))
 ]
 
 if settings.DEBUG:
