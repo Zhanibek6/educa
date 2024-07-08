@@ -2,7 +2,7 @@ from rest_framework import generics, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from courses.api.serializers import SubjectSerializer, SubjectSerializerWithCount, CourseSerializer, CourseWithContentsSerializer, ModuleSerializer, ContentSerializer, CourseEnrollSerializer, StudentAnswerSerializer
+from courses.api.serializers import SubjectSerializer, SubjectSerializerWithCount, CourseSerializer, CourseWithContentsSerializer, ModuleSerializer, ContentSerializer, CourseEnrollSerializer, StudentAnswerSerializer, TaskSerializer, ModuleWithContentsSerializer
 from courses.models import Subject, Course, Module, Content, Task
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -75,13 +75,13 @@ class CourseDetailView(generics.RetrieveAPIView):
 
         # Add ids for modules
         for index, module in enumerate(module_data):
-            module['id'] = index + 1
+            module['id'] = module['id']
 
         course_data['modules'] = module_data
 
         return Response(course_data)
 
-
+'''
 class ModuleDetailView(generics.RetrieveAPIView):
     queryset = Module.objects.all()
     serializer_class = ModuleSerializer
@@ -98,6 +98,36 @@ class ModuleDetailView(generics.RetrieveAPIView):
         module_data['contents'] = content_serializer.data
 
         return Response(module_data)
+    '''
+
+class ModuleDetailView(generics.RetrieveAPIView):
+    queryset = Module.objects.all()
+    serializer_class = ModuleWithContentsSerializer 
+    permission_classes = [IsAuthenticated]
+
+    def retrieve(self, request, *args, **kwargs):
+        course_pk = self.kwargs['course_pk']
+        module_pk = self.kwargs['module_pk']
+        instance = self.get_queryset().filter(course_id=course_pk, id=module_pk).first()
+        if not instance:
+            return Response({"detail": "Not found."}, status=404)
+        
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+class TaskDetailView(generics.RetrieveAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        if not instance:
+            return Response({"detail": "Not found."}, status=404)
+        
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class CourseViewSet(viewsets.ReadOnlyModelViewSet):
@@ -154,7 +184,6 @@ class UnsubscribeCourseAPIView(APIView):
 
 class StudentAnswerCreateAPIView(generics.CreateAPIView):
     serializer_class = StudentAnswerSerializer
-    permission_classes = [IsAuthenticated]
 
     def dispatch(self, request, *args, **kwargs):
         self.task = get_object_or_404(Task, id=self.kwargs['task_id'])
